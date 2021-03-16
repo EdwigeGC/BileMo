@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,6 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @ApiResource()
  */
 class User implements UserInterface
 {
@@ -19,6 +21,11 @@ class User implements UserInterface
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $name;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
@@ -37,34 +44,41 @@ class User implements UserInterface
     private $password;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $lastName;
+    private $token;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="datetime")
      */
-    private $firstName;
+    private $createdAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="users")
+     * @ORM\OneToMany (targetEntity=Customer::class, mappedBy="customer", orphanRemoval=true)
      * @ORM\JoinColumn(nullable=false)
      */
-    private $client;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=Product::class, mappedBy="users")
-     */
-    private $products;
+    private $customer;
 
     public function __construct()
     {
-        $this->products = new ArrayCollection();
+        $this->customer = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function getEmail(): ?string
@@ -123,29 +137,30 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getLastName(): string
+    public function getToken(): ?string
     {
-        return (string) $this->lastName;
+        return $this->token;
     }
 
-    public function setLastName(string $lastName): self
+    public function setToken(?string $token): self
     {
-        $this->lastName= $lastName;
+        $this->token = $token;
 
         return $this;
     }
 
-    public function getFirstName(): string
+    public function getCreatedAt(): ?\DateTimeInterface
     {
-        return (string) $this->firstName;
+        return $this->createdAt;
     }
 
-    public function setFirstName(string $firstName): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->firstName= $firstName;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
+
 
     /**
      * Returning a salt is only needed, if you are not using a modern
@@ -167,42 +182,34 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
-    public function getClient(): ?Client
-    {
-        return $this->client;
-    }
-
-    public function setClient(?Client $client): self
-    {
-        $this->client = $client;
-
-        return $this;
-    }
-
     /**
-     * @return Collection|Product[]
+     * @return Collection|Customer[]
      */
-    public function getProducts(): Collection
+    public function getCustomers(): Collection
     {
-        return $this->products;
+        return $this->customers;
     }
 
-    public function addProduct(Product $product): self
+    public function addCustomer(Customer $customer): self
     {
-        if (!$this->products->contains($product)) {
-            $this->products[] = $product;
-            $product->addUser($this);
+        if (!$this->customers->contains($customer)) {
+            $this->customers[] = $customer;
+            $customer->setCustomer($this);
         }
 
         return $this;
     }
 
-    public function removeProduct(Product $product): self
+    public function removeCustomer(Customer $customer): self
     {
-        if ($this->products->removeElement($product)) {
-            $product->removeUser($this);
+        if ($this->customers->removeElement($customer)) {
+            // set the owning side to null (unless already changed)
+            if ($customer->getUsers() === $this) {
+                $customer->setUsers(null);
+            }
         }
 
         return $this;
     }
+
 }
