@@ -2,14 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
+use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @ORM\Entity(repositoryClass=ProductRepository::class)
  */
 class Product
 {
@@ -17,40 +18,67 @@ class Product
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups("list")
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("list")
+     * @Assert\NotBlank
+     * @Groups("list", "details")
      */
     private $name;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="string", length=255)
+     * @Groups("details")
      */
-    private $characteristic;
+    private $color;
 
     /**
      * @ORM\Column(type="float")
-     * @Groups("list")
+     * @Groups("list", "details")
      */
     private $price;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups("list")
+     * @ORM\Column(type="string", length=255, unique=true)
+     * @Groups("details")
      */
     private $reference;
 
     /**
-     * @ORM\ManyToMany(targetEntity=User::class, inversedBy="products")
+     * @ORM\Column(type="string", length=255)
+     * @Groups("details")
      */
-    private $users;
+    private $brand;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Groups("list", "details")
+     */
+    private $storageCapacity;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Groups("details")
+     */
+    private $operatingSystem;
+
+    /**
+     * @ORM\Column(type="decimal", precision=4, scale=2)
+     * @Groups("list", "details")
+     */
+    private $screenSize;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Customer::class, inversedBy="products")
+     */
+    private $customers;
 
     public function __construct()
     {
-        $this->users = new ArrayCollection();
+        $this->customers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -70,14 +98,14 @@ class Product
         return $this;
     }
 
-    public function getCharacteristic(): ?string
+    public function getColor(): ?string
     {
-        return $this->characteristic;
+        return $this->color;
     }
 
-    public function setCharacteristic(string $characteristic): self
+    public function setColor(string $color): self
     {
-        $this->characteristic = $characteristic;
+        $this->color = $color;
 
         return $this;
     }
@@ -106,26 +134,74 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection|User[]
-     */
-    public function getUsers(): Collection
+    public function getBrand(): ?string
     {
-        return $this->users;
+        return $this->brand;
     }
 
-    public function addUser(User $user): self
+    public function setBrand(string $brand): self
     {
-        if (!$this->users->contains($user)) {
-            $this->users[] = $user;
+        $this->brand = $brand;
+
+        return $this;
+    }
+
+    public function getStorageCapacity(): ?string
+    {
+        return $this->storageCapacity;
+    }
+
+    public function setStorageCapacity(string $storageCapacity): self
+    {
+        $this->storageCapacity = $storageCapacity;
+
+        return $this;
+    }
+
+    public function getOperatingSystem(): ?string
+    {
+        return $this->operatingSystem;
+    }
+
+    public function setOperatingSystem(string $operatingSystem): self
+    {
+        $this->operatingSystem = $operatingSystem;
+
+        return $this;
+    }
+
+    public function getScreenSize(): ?string
+    {
+        return $this->screenSize;
+    }
+
+    public function setScreenSize(string $screenSize): self
+    {
+        $this->screenSize = $screenSize;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Customer[]
+     */
+    public function getCustomers(): Collection
+    {
+        return $this->customers;
+    }
+
+    public function addCustomer(Customer $customer): self
+    {
+        if (!$this->customers->contains($customer)) {
+            $this->customers[] = $customer;
         }
 
         return $this;
     }
 
-    public function removeUser(User $user): self
+    public function removeCustomer(Customer $customer): self
     {
-        $this->users->removeElement($user);
+        $this->customers->removeElement($customer);
 
         return $this;
     }
