@@ -8,66 +8,80 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use OpenApi\Annotations as OA;
 
 /**
  * @ORM\Entity(repositoryClass=ProductRepository::class)
+ * @OA\Schema()
  */
 class Product
 {
     /**
+     * @OA\Property(
+     *     format="int64",
+     *     title="ID")
+     * @var integer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("list")
+     * @Groups("products:list")
      */
     private $id;
 
     /**
+     * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank
-     * @Groups("list", "details")
+     * @Groups("products:list", "products:item")
      */
     private $name;
 
     /**
+     * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("details")
+     * @Groups("products:item")
      */
     private $color;
 
     /**
+     * @OA\Property (type="number", format="float")
      * @ORM\Column(type="float")
-     * @Groups("list", "details")
+     * @Groups("products:list", "products:item")
      */
     private $price;
 
     /**
+     * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups("details")
+     * @Groups("products:item")
      */
     private $reference;
 
     /**
+     * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("details")
+     * @Groups("products:item")
      */
     private $brand;
 
     /**
+     * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("list", "details")
+     * @Groups("products:list", "products:item")
      */
     private $storageCapacity;
 
     /**
+     * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("details")
+     * @Groups("products:item")
      */
     private $operatingSystem;
 
     /**
+     * @OA\Property (type="number", format="float")
      * @ORM\Column(type="decimal", precision=4, scale=2)
-     * @Groups("list", "details")
+     * @Groups("products:list", "products:item")
      */
     private $screenSize;
 

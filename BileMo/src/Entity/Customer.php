@@ -8,14 +8,21 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use OpenApi\Annotations as OA;
+
 
 
 /**
- * @ORM\Entity(repositoryClass=ClientRepository::class)
+ * @ORM\Entity(repositoryClass=CustomerRepository::class)
+ * @OA\Schema()
  */
 class Customer
 {
     /**
+     * @OA\Property(
+     *     format="int64",
+     *     title="ID")
+     * @var int
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -24,24 +31,32 @@ class Customer
     private $id;
 
     /**
+     * @OA\Property (type="string", format="email")
+     * @var string
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups("list", "item")
+     * @Groups("item")
      */
     private $email;
 
     /**
+     * @OA\Property (type="string")
+     * @var string
      * @ORM\Column(type="string")
      * @Groups("list", "item")
      */
     private $lastName;
 
     /**
+     * @OA\Property (type="string")
+     * @var string
      * @ORM\Column(type="string")
      * @Groups("list", "item")
      */
     private $firstName;
 
     /**
+     * @OA\Property (type="string", format="date-time")
+     * @var DateTimeInterface
      * @ORM\Column(type="datetime")
      * @Groups("item")
      */
