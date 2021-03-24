@@ -115,6 +115,16 @@ class CustomerController extends AbstractController
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $manager
      * @param ValidatorInterface $validator
+     *
+     * @OA\Post(
+     *    path="/api/customers/new",
+     *    tags={"Customer"},
+     *    @OA\Response(
+     *       response="201",
+     *       description="Customer resource created",
+     *       @OA\JsonContent(type="object", @OA\Items(ref="#/components/schemas/Customer"))
+     *     ),
+     * )
      * @return JsonResponse
      */
     public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, ValidatorInterface $validator) : JsonResponse
@@ -129,11 +139,14 @@ class CustomerController extends AbstractController
             if(count($errors)>0) {
                 return $this->json($errors, 400);
             }
-            $customer->setCreatedAt(new \DateTime());
-            $manager->persist($customer);
-            $manager->flush();
+            else{
+                $customer->setCreatedAt(new \DateTime());
+                $manager->persist($customer);
+                $manager->flush();
 
-            return $this->json($customer, 201,[]);
+                return $this->json($customer, 201,[]);
+            }
+
         } catch(NotEncodableValueException $e){
             return $this->json([
                 'status'=> 400,
