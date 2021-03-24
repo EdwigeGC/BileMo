@@ -56,8 +56,7 @@ class User implements UserInterface
     private $createdAt;
 
     /**
-     * @ORM\OneToMany (targetEntity=Customer::class, mappedBy="customer", orphanRemoval=true)
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\OneToMany (targetEntity=Customer::class, mappedBy="user", orphanRemoval=true)
      * @Groups("list")
      */
     private $customer;

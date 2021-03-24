@@ -8,12 +8,15 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use OpenApi\Annotations as OA;
-
-
 
 /**
  * @ORM\Entity(repositoryClass=CustomerRepository::class)
+ * @UniqueEntity(
+ *      fields={"email"},
+ *      message="Email address already used for another account."
+ * )
  * @OA\Schema()
  */
 class Customer
@@ -34,6 +37,7 @@ class Customer
      * @OA\Property (type="string", format="email")
      * @var string
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\Email()
      * @Groups("item")
      */
     private $email;
@@ -42,6 +46,7 @@ class Customer
      * @OA\Property (type="string")
      * @var string
      * @ORM\Column(type="string")
+     * @Assert\Length(min=2, max=100)
      * @Groups("list", "item")
      */
     private $lastName;
@@ -50,6 +55,7 @@ class Customer
      * @OA\Property (type="string")
      * @var string
      * @ORM\Column(type="string")
+     * @Assert\Length(min=2, max=100)
      * @Groups("list", "item")
      */
     private $firstName;
@@ -58,6 +64,7 @@ class Customer
      * @OA\Property (type="string", format="date-time")
      * @var DateTimeInterface
      * @ORM\Column(type="datetime")
+     * @Assert\DateTime
      * @Groups("item")
      */
     private $createdAt;
@@ -71,7 +78,7 @@ class Customer
      * @ORM\ManyToOne(targetEntity=User::class,  inversedBy="customers")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $users;
+    private $user;
 
 
     public function __construct()
@@ -132,14 +139,14 @@ class Customer
         return $this;
     }
 
-    public function getUsers(): ?User
+    public function getUser(): ?User
     {
-        return $this->users;
+        return $this->user;
     }
 
-    public function setUsers(?User $users): self
+    public function setUser(?User $user): self
     {
-        $this->users = $users;
+        $this->user = $user;
 
         return $this;
     }
