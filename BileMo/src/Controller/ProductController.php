@@ -27,6 +27,7 @@ class ProductController extends AbstractController
      * @OA\Get(
      *     path="/api/products",
      *     tags={"Product"},
+     *     security={"bearer"},
      *     @OA\Parameter(
      *          name="page",
      *          in="query",
@@ -42,6 +43,10 @@ class ProductController extends AbstractController
      *          description="Product list",
      *          @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
      *     ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Invalid or missing token"
+     *    ),
      * )
      * @return Response
      */
@@ -60,6 +65,7 @@ class ProductController extends AbstractController
      * @OA\Get(
      *    path="/api/products/{id}",
      *    tags={"Product"},
+     *    security={"bearer"},
      *    @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -73,10 +79,21 @@ class ProductController extends AbstractController
      *       description="Product resource",
      *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
      *     ),
-     *     @OA\Response(
-     *        response=404,
-     *        description="The resource doesn't exist",
-     *     )
+     *    @OA\Response(
+     *       response=401,
+     *       description="Invalid or missing token"
+     *    ),
+     *    @OA\Response(
+     *       response=400,
+     *       description="Invalid ID supplied"
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="The resource doesn't exist",
+     *     ),
+     *     security={
+     *       "bearerAuth": {"JWT"}
+     *     }
      * )
      * @return Response
      */

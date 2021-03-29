@@ -37,9 +37,27 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Customer list"
+                        "description": "Customer list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Customer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "bearer"
+                    }
+                ]
             }
         },
         "/api/customers/{id}": {
@@ -47,7 +65,7 @@
                 "tags": [
                     "Customer"
                 ],
-                "summary": "Provides one product resource for a specific user.",
+                "summary": "Provides one customer resource for a specific user.",
                 "operationId": "App\\Controller\\CustomerController::item",
                 "parameters": [
                     {
@@ -75,10 +93,21 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Invalid ID supplied"
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
+                    },
                     "404": {
                         "description": "The resource doesn't exist"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "bearer"
+                    }
+                ]
             }
         },
         "/api/customers/new": {
@@ -88,21 +117,42 @@
                 ],
                 "summary": "Create a new customer",
                 "operationId": "App\\Controller\\CustomerController::create",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "Customer resource created",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
+                                    "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/Customer"
                                     }
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "bearer"
+                    }
+                ]
             }
         },
         "api/customers/delete/{id}": {
@@ -128,10 +178,66 @@
                     "204": {
                         "description": "Customer resource deleted"
                     },
+                    "400": {
+                        "description": "Invalid ID supplied"
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
+                    },
                     "404": {
                         "description": "Resource not found"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "bearer"
+                    }
+                ]
+            }
+        },
+        "/api/customers/edit/{id}": {
+            "put": {
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Edit customer's information",
+                "operationId": "App\\Controller\\CustomerController::update",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Customer resource updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Customer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
+                    }
+                },
+                "security": [
+                    {
+                        "scalar": "bearer"
+                    }
+                ]
             }
         },
         "/api/products": {
@@ -166,8 +272,16 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "bearer"
+                    }
+                ]
             }
         },
         "/api/products/{id}": {
@@ -203,8 +317,43 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Invalid or missing token"
+                    },
+                    "400": {
+                        "description": "Invalid ID supplied"
+                    },
                     "404": {
                         "description": "The resource doesn't exist"
+                    }
+                },
+                "security": {
+                    "bearerAuth": {
+                        "0": "JWT"
+                    }
+                }
+            }
+        },
+        "/api/login_check": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Provides new token thanks to basic authentication",
+                "operationId": "App\\Controller\\SecurityController::api_login",
+                "responses": {
+                    "200": {
+                        "description": "new valid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Failure: bad username or password"
                     }
                 }
             }
@@ -268,6 +417,24 @@
                     "screenSize": {
                         "type": "number",
                         "format": "float"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "properties": {
+                    "id": {
+                        "title": "ID",
+                        "format": "int64"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "description": "The hashed password",
+                        "type": "string",
+                        "format": "password"
                     }
                 },
                 "type": "object"

@@ -29,7 +29,7 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("list")
+     * @Groups("list", "customers:item")
      */
     private $id;
 
@@ -38,7 +38,7 @@ class Customer
      * @var string
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email()
-     * @Groups("item")
+     * @Groups("customers:item")
      */
     private $email;
 
@@ -47,7 +47,7 @@ class Customer
      * @var string
      * @ORM\Column(type="string")
      * @Assert\Length(min=2, max=100)
-     * @Groups("list", "item")
+     * @Groups("list", "customers:item")
      */
     private $lastName;
 
@@ -56,7 +56,7 @@ class Customer
      * @var string
      * @ORM\Column(type="string")
      * @Assert\Length(min=2, max=100)
-     * @Groups("list", "item")
+     * @Groups("list", "customers:item")
      */
     private $firstName;
 
@@ -65,7 +65,7 @@ class Customer
      * @var DateTimeInterface
      * @ORM\Column(type="datetime")
      * @Assert\DateTime
-     * @Groups("item")
+     * @Groups("customers:item")
      */
     private $createdAt;
 
