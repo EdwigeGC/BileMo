@@ -8,18 +8,21 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
-use OpenApi\Annotations\OpenApi as OA;
+use OpenApi\Annotations as OA;
 
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @OA\Schema()
  */
 class User implements UserInterface
 {
     /**
+     * @OA\Property(type="integer", format="int64")
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups("customers:item")
      */
     private $id;
 
@@ -29,6 +32,7 @@ class User implements UserInterface
     private $name;
 
     /**
+     * @OA\Property (type="string", format="email")
      * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
@@ -39,15 +43,11 @@ class User implements UserInterface
     private $roles = [];
 
     /**
+     * @OA\Property (type="string", format="password")
      * @var string The hashed password
      * @ORM\Column(type="string")
      */
     private $password;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $token;
 
     /**
      * @ORM\Column(type="datetime")
@@ -187,15 +187,15 @@ class User implements UserInterface
     /**
      * @return Collection|Customer[]
      */
-    public function getCustomers(): Collection
+    public function getCustomer(): Collection
     {
-        return $this->customers;
+        return $this->customer;
     }
 
     public function addCustomer(Customer $customer): self
     {
-        if (!$this->customers->contains($customer)) {
-            $this->customers[] = $customer;
+        if (!$this->customer->contains($customer)) {
+            $this->customer[] = $customer;
             $customer->setCustomer($this);
         }
 
@@ -204,7 +204,7 @@ class User implements UserInterface
 
     public function removeCustomer(Customer $customer): self
     {
-        if ($this->customers->removeElement($customer)) {
+        if ($this->customer->removeElement($customer)) {
             // set the owning side to null (unless already changed)
             if ($customer->getUsers() === $this) {
                 $customer->setUsers(null);

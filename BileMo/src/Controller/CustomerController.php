@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Customer;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use OpenApi\Tests\Fixtures\Parser\UserInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +35,7 @@ class CustomerController extends AbstractController
      * @OA\Get(
      *     path="/api/customers/users/{user_id}",
      *     tags={"Customer"},
+     *     security={"bearer"},
      *     @OA\Parameter(
      *          name="user_id",
      *          in="path",
@@ -56,19 +58,24 @@ class CustomerController extends AbstractController
      *     @OA\Response(
      *          response="200",
      *          description="Customer list",
+     *          @OA\JsonContent(type="array",@OA\Items(ref="#/components/schemas/Customer"))
      *     ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Invalid or missing token"
+     *    ),
      * )
      * @return JsonResponse
      */
     public function list(User $user_id, Paginator $paginator): JsonResponse
     {
         $paginator  ->setEntityClass(Customer::class)
-                    ->setFilterBy(['users'=>$user_id]);
+                    ->setFilterBy(['user'=>$user_id]);
         return $response= $this->json($paginator->getData(), 200, [],['groups'=>'list']);
     }
 
     /**
-     * Provides one product resource for a specific user.
+     * Provides one customer resource for a specific user.
      *
      * @Route("/{id}", name="customers_item", methods={"GET"})
      * @param Customer $id
@@ -77,6 +84,7 @@ class CustomerController extends AbstractController
      * @OA\Get(
      *    path="/api/customers/{id}",
      *    tags={"Customer"},
+     *    security={"bearer"},
      *    @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -92,6 +100,14 @@ class CustomerController extends AbstractController
      *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
      *     ),
      *    @OA\Response(
+     *       response=400,
+     *       description="Invalid ID supplied"
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Invalid or missing token"
+     *    ),
+     *    @OA\Response(
      *        response=404,
      *        description="The resource doesn't exist"
      *     )
@@ -102,7 +118,7 @@ class CustomerController extends AbstractController
     {
         if($id != null)
         {
-            return $response = $this->json($repository->findOneBy(['id' => $id]), 200, [], ['groups' => 'item']);
+            return $response = $this->json($repository->findOneBy(['id' => $id]), 200, [], ['groups'=>'customers:item']);
         }
         else
         {
@@ -121,20 +137,30 @@ class CustomerController extends AbstractController
      * @OA\Post(
      *    path="/api/customers/new",
      *    tags={"Customer"},
+     *    security={"bearer"},
      *    @OA\Response(
      *       response="201",
      *       description="Customer resource created",
-     *       @OA\JsonContent(type="object", @OA\Items(ref="#/components/schemas/Customer"))
+     *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
      *     ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Invalid or missing token"
+     *    ),
+     *     @OA\RequestBody(
+     *        required=true,
+     *        @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
+     *     )
      * )
      * @return JsonResponse
      */
     public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, ValidatorInterface $validator) : JsonResponse
     {
-        $req= $request->getContent();
+        $data= $request->getContent();
 
         try{
-            $customer= $serializer->deserialize($req, Customer::class, 'json');
+            $customer= $serializer->deserialize($data, Customer::class, 'json');
+            $user=$this->getUser();
 
             $errors= $validator->validate($customer);
 
@@ -142,11 +168,12 @@ class CustomerController extends AbstractController
                 return $this->json($errors, 400);
             }
             else{
-                $customer->setCreatedAt(new \DateTime());
+                $customer->setCreatedAt(new \DateTime())
+                        ->setUser($user);
                 $manager->persist($customer);
                 $manager->flush();
 
-                return $this->json($customer, 201,[]);
+                return $this->json($customer, 201,[],['groups' => 'customers:item']);
             }
 
         } catch(NotEncodableValueException $e){
@@ -166,6 +193,7 @@ class CustomerController extends AbstractController
      * @OA\Delete(
      *     path="api/customers/delete/{id}",
      *     tags={"Customer"},
+     *     security={"bearer"},
      *    @OA\Parameter(
      *          name="id",
      *          in="path",
@@ -178,6 +206,14 @@ class CustomerController extends AbstractController
      *    @OA\Response(
      *       response="204",
      *       description="Customer resource deleted"),
+     *    @OA\Response(
+     *       response=400,
+     *       description="Invalid ID supplied"
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Invalid or missing token"
+     *    ),
      *    @OA\Response(
      *       response="404",
      *       description="Resource not found"),
@@ -195,6 +231,51 @@ class CustomerController extends AbstractController
         else{
             return new JsonResponse(null, 404);
         }
+    }
+
+    /**
+     * Edit customer's information
+     * @Route("/edit/{id}", name="customers_edit", methods={"PUT"})
+     *
+     * @param Customer $customer
+     * @param Request $request
+     * @param EntityManagerInterface $manager
+     * @param SerializerInterface $serializer
+     * @param ValidatorInterface $validator
+     *
+     * @OA\Put(
+     *    path="/api/customers/edit/{id}",
+     *    tags={"Customer"},
+     *    security={"bearer"},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Customer resource updated",
+     *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
+     *     ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Invalid or missing token"
+     *    ),
+     *     @OA\RequestBody(
+     *        required=true,
+     *        @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
+     *     )
+     * )
+     *
+     * @return Json Response
+     */
+    public function update(Customer $customer, Request $request, EntityManagerInterface $manager, SerializerInterface $serializer, ValidatorInterface $validator)
+    {
+        $data= $request->getContent();
+        $content= $serializer->deserialize($data, Customer::class, 'json');
+        $customer->getId($content->getId());
+        $customer->setEmail($content->getEmail())
+            ->setLastName($content->getLastName())
+            ->setFirstName($content->getFirstName());
+        $manager->persist($customer);
+        $manager->flush();
+
+        return $this->json($customer, 200,[],['groups' => 'customers:item']);
     }
 
 }

@@ -75,7 +75,7 @@ class AppFixtures extends Fixture
             ->setFirstName('simone')
             ->setLastName('marteen')
             ->setCreatedAt(new \DateTime('2021-03-05 15:27:34'))
-            ->setUsers($user1);
+            ->setUser($user1);
         $manager->persist($customer1);
 
         $customer2 = new Customer();
@@ -83,7 +83,7 @@ class AppFixtures extends Fixture
             ->setFirstName('olivia')
             ->setLastName('pope')
             ->setCreatedAt(new \DateTime('2021-03-03 12:14:34'))
-            ->setUsers($user2);
+            ->setUser($user2);
         $manager->persist($customer2);
 
         $customer3 = new Customer();
@@ -91,7 +91,7 @@ class AppFixtures extends Fixture
             ->setFirstName('jake')
             ->setLastName('mikkelson')
             ->setCreatedAt(new \DateTime('2021-03-03 12:14:34'))
-            ->setUsers($user1);
+            ->setUser($user1);
         $manager->persist($customer3);
 
         $manager->flush();
