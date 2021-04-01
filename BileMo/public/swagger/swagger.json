@@ -6,7 +6,7 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/customers/users/{user_id}": {
+        "/api/customers": {
             "get": {
                 "tags": [
                     "Customer"
@@ -144,6 +144,9 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Invalid data recorded"
+                    },
                     "401": {
                         "description": "Invalid or missing token"
                     }
@@ -155,7 +158,7 @@
                 ]
             }
         },
-        "api/customers/delete/{id}": {
+        "api/customers/{id}/delete": {
             "delete": {
                 "tags": [
                     "Customer"
@@ -195,13 +198,13 @@
                 ]
             }
         },
-        "/api/customers/edit/{id}": {
+        "/api/customers/{id}/edit": {
             "put": {
                 "tags": [
                     "Customer"
                 ],
                 "summary": "Edit customer's information",
-                "operationId": "App\\Controller\\CustomerController::update",
+                "operationId": "App\\Controller\\CustomerController::edit",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -228,6 +231,9 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Invalid data recorded"
                     },
                     "401": {
                         "description": "Invalid or missing token"
@@ -424,7 +430,7 @@
             "User": {
                 "properties": {
                     "id": {
-                        "title": "ID",
+                        "type": "integer",
                         "format": "int64"
                     },
                     "email": {

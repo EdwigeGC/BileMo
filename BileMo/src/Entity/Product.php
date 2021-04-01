@@ -6,13 +6,33 @@ use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 use OpenApi\Annotations as OA;
+use Hateoas\Configuration\Annotation as Hateoas;
+use Hateoas\Configuration\Annotation\Exclusion;
+
+
 
 /**
  * @ORM\Entity(repositoryClass=ProductRepository::class)
  * @OA\Schema()
+ *
+ * @Hateoas\Relation(
+ *     "List of all the products",
+ *     href= @Hateoas\Route(
+ *     "api_products_list"
+ *     ),
+ *     exclusion=@Exclusion(groups="item")
+ * )
+ * @Hateoas\Relation(
+ *     "Read the details",
+ *     href= @Hateoas\Route(
+ *     "api_products_item",
+ *     parameters={"id"="expr(object.getId())"}
+ *     ),
+ *     exclusion=@Exclusion(groups="list")
+ * )
  */
 class Product
 {
@@ -24,7 +44,7 @@ class Product
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("products:list")
+     * @Serializer\Groups({"list", "item"})
      */
     private $id;
 
@@ -32,56 +52,56 @@ class Product
      * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank
-     * @Groups("products:list", "products:item")
+     * @Serializer\Groups({"list", "item"})
      */
     private $name;
 
     /**
      * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("products:item")
+     * @Serializer\Groups({"item"})
      */
     private $color;
 
     /**
      * @OA\Property (type="number", format="float")
      * @ORM\Column(type="float")
-     * @Groups("products:list", "products:item")
+     * @Serializer\Groups({"list", "item"})
      */
     private $price;
 
     /**
      * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups("products:item")
+     * @Serializer\Groups({"item"})
      */
     private $reference;
 
     /**
      * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("products:item")
+     * @Serializer\Groups({"item"})
      */
     private $brand;
 
     /**
      * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("products:list", "products:item")
+     * @Serializer\Groups({"list", "item"})
      */
     private $storageCapacity;
 
     /**
      * @OA\Property (type="string")
      * @ORM\Column(type="string", length=255)
-     * @Groups("products:item")
+     * @Serializer\Groups({"item"})
      */
     private $operatingSystem;
 
     /**
      * @OA\Property (type="number", format="float")
      * @ORM\Column(type="decimal", precision=4, scale=2)
-     * @Groups("products:list", "products:item")
+     * @Serializer\Groups({"item"})
      */
     private $screenSize;
 

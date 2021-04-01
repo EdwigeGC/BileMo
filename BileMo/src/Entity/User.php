@@ -9,11 +9,28 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use OpenApi\Annotations as OA;
+use Hateoas\Configuration\Annotation as Hateoas;
+use Hateoas\Configuration\Annotation\Exclusion;
 
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @OA\Schema()
+ *
+ * @Hateoas\Relation(
+ *     "List of the products",
+ *     href= @Hateoas\Route(
+ *     "api_products_list"
+ *     ),
+ * )
+ * @Hateoas\Relation(
+ *     "List of your customers",
+ *     href= @Hateoas\Route(
+ *     "api_customers_list",
+ *     parameters={"id"="expr(object.getId())"}
+ *     ),
+ * )
+ *
  */
 class User implements UserInterface
 {
