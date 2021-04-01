@@ -54,8 +54,8 @@ Only registered users can access to API's features:
   1. Authenticate with the user test to generate a token (it will be valid during 1 hour):   
       Request: ```POST http://yourlocal/api/login_check```  
       Header:  
-      ```Content-Type: application/json  ```   
-      Boby:  
+      ```Content-Type: application/json```   
+      Body:  
       ```{
            "username":"webshop@mail.fr",  
            "password":"pass1"  
