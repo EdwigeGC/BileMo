@@ -3,9 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
-use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use OpenApi\Tests\Fixtures\Parser\UserInterface;
+use JMS\Serializer\SerializationContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,15 +12,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\CustomerRepository;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Constraints\Json;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\Paginator;
 use OpenApi\Annotations as OA;
 
 
 /**
- * Class CustomerController
+ * Class CustomerController provides features to manage customers
+ *
  * @Route("/api/customers", name="api_customers_")
  * @package App\Controller
  */
@@ -30,10 +29,12 @@ class CustomerController extends AbstractController
     /**
      * Provides the list of customer resources for a specific user.
      *
-     * @Route("/users/{user_id}",name="customers_list", methods={"GET"})
-     * @param User $user_id
+     * @Route(name="list", methods={"GET"})
+     * @param Paginator $paginator
+     * @param SerializerInterface $serializer
+     *
      * @OA\Get(
-     *     path="/api/customers/users/{user_id}",
+     *     path="/api/customers",
      *     tags={"Customer"},
      *     security={"bearer"},
      *     @OA\Parameter(
@@ -65,21 +66,25 @@ class CustomerController extends AbstractController
      *       description="Invalid or missing token"
      *    ),
      * )
-     * @return JsonResponse
+     * @return Response
      */
-    public function list(User $user_id, Paginator $paginator): JsonResponse
+    public function list(Paginator $paginator, SerializerInterface $serializer): Response
     {
+        $user= $this->getUser();
         $paginator  ->setEntityClass(Customer::class)
-                    ->setFilterBy(['user'=>$user_id]);
-        return $response= $this->json($paginator->getData(), 200, [],['groups'=>'list']);
+                    ->setFilterBy(['user'=>$user]);
+        $data= $serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array('list')));
+
+        return new Response($data, 200, ['Content-Type' => 'application/json']);
     }
 
     /**
      * Provides one customer resource for a specific user.
      *
-     * @Route("/{id}", name="customers_item", methods={"GET"})
-     * @param Customer $id
+     * @Route("/{id}", name="item", methods={"GET"})
+     * @param Customer $customer
      * @param CustomerRepository $repository
+     * @param SerializerInterface $serializer
      *
      * @OA\Get(
      *    path="/api/customers/{id}",
@@ -114,21 +119,25 @@ class CustomerController extends AbstractController
      * )
      * @return Response
      */
-    public function item(Customer $id, CustomerRepository $repository): Response
+    public function item(Customer $customer, CustomerRepository $repository, SerializerInterface $serializer): Response
     {
-        if($id != null)
-        {
-            return $response = $this->json($repository->findOneBy(['id' => $id]), 200, [], ['groups'=>'customers:item']);
+        $user= $this->getUser();
+        if($customer && $customer->getUser() == $user){
+            $data=$serializer->serialize($customer, "json",SerializationContext::create()->setGroups(array('item')));
+            return new Response($data, 200, ['Content-Type' => 'application/json']);
         }
-        else
-        {
-            return new Response('Not found', 404);
+        else if($customer && $customer->getUser() != $user){
+            return new Response("You can't access to this resource", 403);
+        }
+        else {
+            return new Response("The resource doesn't exist", 404, ['Content-Type' => 'application/json']);
         }
     }
 
     /**
      * Create a new customer
-     * @Route("/new", name="customers_create", methods={"POST"})
+     *
+     * @Route("/new", name="create", methods={"POST"})
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $manager
@@ -143,6 +152,10 @@ class CustomerController extends AbstractController
      *       description="Customer resource created",
      *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
      *     ),
+     *     @OA\Response(
+     *       response=400,
+     *       description="Invalid data recorded"
+     *    ),
      *    @OA\Response(
      *       response=401,
      *       description="Invalid or missing token"
@@ -152,12 +165,11 @@ class CustomerController extends AbstractController
      *        @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
      *     )
      * )
-     * @return JsonResponse
+     * @return Response
      */
-    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, ValidatorInterface $validator) : JsonResponse
+    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, ValidatorInterface $validator) : Response
     {
         $data= $request->getContent();
-
         try{
             $customer= $serializer->deserialize($data, Customer::class, 'json');
             $user=$this->getUser();
@@ -173,7 +185,9 @@ class CustomerController extends AbstractController
                 $manager->persist($customer);
                 $manager->flush();
 
-                return $this->json($customer, 201,[],['groups' => 'customers:item']);
+                $customer=$serializer->serialize($customer, "json",SerializationContext::create()->setGroups(array('item')));
+
+                return new Response($customer, 201, ['Content-Type' => 'application/json']);
             }
 
         } catch(NotEncodableValueException $e){
@@ -186,12 +200,13 @@ class CustomerController extends AbstractController
 
     /**
      * Delete a customer
-     * @Route ("/delete/{id}", name="customers_delete", methods={"DELETE"})
+     *
+     * @Route ("/{id}/delete", name="delete", methods={"DELETE"})
      * @param Customer $customer
      * @param EntityManagerInterface $manager
      *
      * @OA\Delete(
-     *     path="api/customers/delete/{id}",
+     *     path="api/customers/{id}/delete",
      *     tags={"Customer"},
      *     security={"bearer"},
      *    @OA\Parameter(
@@ -218,24 +233,27 @@ class CustomerController extends AbstractController
      *       response="404",
      *       description="Resource not found"),
      * )
-     * @return JsonResponse
+     * @return JsonResponse|Response
      */
     public function delete(Customer $customer, EntityManagerInterface $manager)
     {
-        if($customer != null) {
+        if($customer && $customer->getUser() == $this->getUser()){
             $manager->remove($customer);
             $manager->flush();
 
             return new JsonResponse(null, 204);
         }
+        else if($customer && $customer->getUser() != $this->getUser()){
+            return new Response("You can't access to this resource", 403, ['Content-Type' => 'application/json']);
+        }
         else{
-            return new JsonResponse(null, 404);
+            return new Response("Resource not found", 404);
         }
     }
 
     /**
      * Edit customer's information
-     * @Route("/edit/{id}", name="customers_edit", methods={"PUT"})
+     * @Route("/{id}/edit", name="edit", methods={"PUT"})
      *
      * @param Customer $customer
      * @param Request $request
@@ -244,7 +262,7 @@ class CustomerController extends AbstractController
      * @param ValidatorInterface $validator
      *
      * @OA\Put(
-     *    path="/api/customers/edit/{id}",
+     *    path="/api/customers/{id}/edit",
      *    tags={"Customer"},
      *    security={"bearer"},
      *    @OA\Response(
@@ -252,6 +270,10 @@ class CustomerController extends AbstractController
      *       description="Customer resource updated",
      *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
      *     ),
+     *     @OA\Response(
+     *       response=400,
+     *       description="Invalid data recorded"
+     *    ),
      *    @OA\Response(
      *       response=401,
      *       description="Invalid or missing token"
@@ -262,20 +284,35 @@ class CustomerController extends AbstractController
      *     )
      * )
      *
-     * @return Json Response
+     * @return JsonResponse
      */
-    public function update(Customer $customer, Request $request, EntityManagerInterface $manager, SerializerInterface $serializer, ValidatorInterface $validator)
+    public function edit(Customer $customer, Request $request, EntityManagerInterface $manager, SerializerInterface $serializer, ValidatorInterface $validator)
     {
         $data= $request->getContent();
-        $content= $serializer->deserialize($data, Customer::class, 'json');
-        $customer->getId($content->getId());
-        $customer->setEmail($content->getEmail())
-            ->setLastName($content->getLastName())
-            ->setFirstName($content->getFirstName());
-        $manager->persist($customer);
-        $manager->flush();
+        try{
+            $content= $serializer->deserialize($data, Customer::class, 'json');
+            $customer->getId($content->getId());
 
-        return $this->json($customer, 200,[],['groups' => 'customers:item']);
+            $errors= $validator->validate($customer);
+
+            if(count($errors)>0) {
+                return $this->json($errors, 400);
+            }
+            else {
+                $customer->setEmail($content->getEmail())
+                    ->setLastName($content->getLastName())
+                    ->setFirstName($content->getFirstName());
+                $manager->persist($customer);
+                $manager->flush();
+
+                return $this->json($customer, 200, [], ['groups' => 'customers:item']);
+            }
+        } catch(NotEncodableValueException $e){
+            return $this->json([
+                'status'=> 400,
+                'message'=> $e->getMessage()
+            ],400);
+        }
     }
 
 }

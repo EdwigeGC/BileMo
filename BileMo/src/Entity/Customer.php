@@ -6,10 +6,12 @@ use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use OpenApi\Annotations as OA;
+use Hateoas\Configuration\Annotation as Hateoas;
+use Hateoas\Configuration\Annotation\Exclusion;
 
 /**
  * @ORM\Entity(repositoryClass=CustomerRepository::class)
@@ -18,6 +20,46 @@ use OpenApi\Annotations as OA;
  *      message="Email address already used for another account."
  * )
  * @OA\Schema()
+ *
+ * @Hateoas\Relation(
+ *     "List of all your customers",
+ *     href= @Hateoas\Route(
+ *     "api_customers_list",
+ *     parameters={"id"="expr(object.getId())"}
+ *     ),
+ *     exclusion=@Exclusion(groups="item")
+ * )
+ * @Hateoas\Relation(
+ *     "Read the details",
+ *     href= @Hateoas\Route(
+ *     "api_customers_item",
+ *     parameters={"id"="expr(object.getId())"}
+ *     ),
+ *     exclusion=@Exclusion(groups="list")
+ * )
+ * @Hateoas\Relation(
+ *     "Create a new customer",
+ *     href= @Hateoas\Route(
+ *     "api_customers_create"
+ *     ),
+ *     exclusion=@Exclusion(groups="list")
+ * )
+ * @Hateoas\Relation(
+ *     "Delete this customer",
+ *     href= @Hateoas\Route(
+ *     "api_customers_delete",
+ *     parameters={"id"="expr(object.getId())"}
+ *     ),
+ *     exclusion=@Exclusion(groups="item")
+ * )
+ * @Hateoas\Relation(
+ *     "Edit this customer",
+ *     href= @Hateoas\Route(
+ *     "api_customers_edit",
+ *     parameters={"id"="expr(object.getId())"}
+ *     ),
+ *     exclusion=@Exclusion(groups="item")
+ * )
  */
 class Customer
 {
@@ -29,7 +71,7 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("list", "customers:item")
+     * @Serializer\Groups({"list", "item"})
      */
     private $id;
 
@@ -38,7 +80,7 @@ class Customer
      * @var string
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email()
-     * @Groups("customers:item")
+     * @Serializer\Groups({"item"})
      */
     private $email;
 
@@ -47,7 +89,7 @@ class Customer
      * @var string
      * @ORM\Column(type="string")
      * @Assert\Length(min=2, max=100)
-     * @Groups("list", "customers:item")
+     * @Serializer\Groups({"list", "item"})
      */
     private $lastName;
 
@@ -56,7 +98,7 @@ class Customer
      * @var string
      * @ORM\Column(type="string")
      * @Assert\Length(min=2, max=100)
-     * @Groups("list", "customers:item")
+     * @Serializer\Groups({"list", "item"})
      */
     private $firstName;
 
@@ -65,7 +107,7 @@ class Customer
      * @var DateTimeInterface
      * @ORM\Column(type="datetime")
      * @Assert\DateTime
-     * @Groups("customers:item")
+     * @Serializer\Groups({"item"})
      */
     private $createdAt;
 

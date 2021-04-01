@@ -5,14 +5,15 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Service\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\SerializationContext;
 use OpenApi\Annotations as OA;
 
 
 /**
- * Class ProductController
+ * Class ProductController provides features to manage products
  * @Route("/api/products", name="api_products_")
  * @package App\Controller
  */
@@ -21,8 +22,9 @@ class ProductController extends AbstractController
     /**
      * Provide the list of all the product resources.
      *
-     * @Route(name="products", methods={"GET"})
+     * @Route(name="list", methods={"GET"})
      * @param Paginator $paginator
+     * @param SerializerInterface $serializer
      *
      * @OA\Get(
      *     path="/api/products",
@@ -50,17 +52,19 @@ class ProductController extends AbstractController
      * )
      * @return Response
      */
-    public function list(Paginator $paginator): Response
+    public function list(Paginator $paginator, SerializerInterface $serializer): Response
     {
         $paginator->setEntityClass(Product::class);
-        return $response= $this->json($paginator->getData(), 200, [],['groups'=>'products:list']);
+        $data=$serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array('list')));
+        return new Response($data, 200, ['Content-Type' => 'application/json']);
     }
 
     /**
      * Provides one product resource.
      *
-     * @Route("/{id}", name="product", methods={"GET"})
+     * @Route("/{id}", name="item", methods={"GET"})
      * @param Product $product
+     * @param SerializerInterface $serializer
      *
      * @OA\Get(
      *    path="/api/products/{id}",
@@ -97,13 +101,14 @@ class ProductController extends AbstractController
      * )
      * @return Response
      */
-    public function details(Product $product): Response
+    public function details(Product $product,SerializerInterface $serializer): Response
     {
-        if($product != null){
-            return $response= $this->json($product, 200,[],['groups'=>'products:item']);
+        if($product){
+            $data=$serializer->serialize($product,"json", SerializationContext::create()->setGroups(array('item')));
+            return new Response($data, 200, ['Content-Type' => 'application/json']);
         }
         else{
-            return new Response('Not found', 404);
+            return new Response("The resource doesn't exist", 404, ['Content-Type' => 'application/json']);
         }
     }
 
