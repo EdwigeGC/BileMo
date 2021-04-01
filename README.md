@@ -5,6 +5,8 @@ Only users registered can access to API features.
 The APi also offers its users the opportunity to consult and manage their customers' data.  
 The requests require a JSON format.  
 
+<a href="https://codeclimate.com/github/EdwigeGC/BileMo/maintainability"><img src="https://api.codeclimate.com/v1/badges/79e36045429a1ccd7018/maintainability" /></a>
+
 ## Getting start
 ### Prerequisites
 
