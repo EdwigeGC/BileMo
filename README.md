@@ -52,9 +52,9 @@ Only registered users can access to API's features:
 ## Test API
 
   1. Authenticate with the user test to generate a token (it will be valid during 1 hour):   
-      Request: POST http://yourlocal/api/login_check   
+      Request: ```POST http://yourlocal/api/login_check```  
       Header:  
-        Content-Type: application/json  
+      ```Content-Type: application/json  ```   
       Boby:  
       ```{  
            "username":"webshop@mail.fr",  
