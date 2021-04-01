@@ -56,10 +56,10 @@ Only registered users can access to API's features:
       Header:  
       ```Content-Type: application/json  ```   
       Boby:  
-      ```{  
+      ```{
            "username":"webshop@mail.fr",  
            "password":"pass1"  
-          }```  
+         }```  
 }
   2. Copy this token in Authorisation -> Type: Bearer Token  
   3. Now you can try a request! Check the documentation (link below)   
