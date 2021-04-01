@@ -1,9 +1,9 @@
 # BileMo
-This project was made to validate my training as a web PHP/Symfony developer. 
-The fake company BileMo provides to other platforms its catalog of high quality mobile phones.
-Only users registered can access to API features.
-The APi also offers its users the opportunity to consult and manage their customers' data.
-The requests require a JSON format.
+This project was made to validate my training as a web PHP/Symfony developer.  
+The fake company BileMo provides to other platforms its catalog of high quality mobile phones.  
+Only users registered can access to API features.  
+The APi also offers its users the opportunity to consult and manage their customers' data.  
+The requests require a JSON format.  
 
 ## Getting start
 ### Prerequisites
@@ -51,20 +51,20 @@ Only registered users can access to API's features:
 
 ## Test API
 
-  1. Authenticate with the user test to generate a token (it will be valid during 1 hour):
-      Request: POST http://yourlocal/api/login_check
-      Header:
-        Content-Type: application/json
-      Boby:
-      ```{
-           "username":"webshop@mail.fr",
-           "password":"pass1"
-          }```
+  1. Authenticate with the user test to generate a token (it will be valid during 1 hour):   
+      Request: POST http://yourlocal/api/login_check   
+      Header:  
+        Content-Type: application/json  
+      Boby:  
+      ```{  
+           "username":"webshop@mail.fr",  
+           "password":"pass1"  
+          }```  
 }
-  2. Copy this token in Authorisation -> Type: Bearer Token
-  3. Now you can try a request! Check the documentation (link below)
+  2. Copy this token in Authorisation -> Type: Bearer Token  
+  3. Now you can try a request! Check the documentation (link below)   
 
 
-## Documentation
+## Documentation   
 
 http://localhost:8888/swagger/index.html
