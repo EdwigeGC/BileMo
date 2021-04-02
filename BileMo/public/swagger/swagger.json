@@ -6,7 +6,7 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/customers": {
+        "/api/customers/list": {
             "get": {
                 "tags": [
                     "Customer"
@@ -98,9 +98,6 @@
                     },
                     "401": {
                         "description": "Invalid or missing token"
-                    },
-                    "404": {
-                        "description": "The resource doesn't exist"
                     }
                 },
                 "security": [
@@ -186,9 +183,6 @@
                     },
                     "401": {
                         "description": "Invalid or missing token"
-                    },
-                    "404": {
-                        "description": "Resource not found"
                     }
                 },
                 "security": [
@@ -246,7 +240,7 @@
                 ]
             }
         },
-        "/api/products": {
+        "/api/products/list": {
             "get": {
                 "tags": [
                     "Product"
@@ -277,10 +271,12 @@
                                     }
                                 }
                             }
+                        },
+                        "links": {
+                            "Read the details of a product": {
+                                "operationId": "item"
+                            }
                         }
-                    },
-                    "401": {
-                        "description": "Invalid or missing token"
                     }
                 },
                 "security": [
@@ -321,6 +317,11 @@
                                     }
                                 }
                             }
+                        },
+                        "links": {
+                            "List of all the product": {
+                                "operationId": "list"
+                            }
                         }
                     },
                     "401": {
@@ -328,9 +329,6 @@
                     },
                     "400": {
                         "description": "Invalid ID supplied"
-                    },
-                    "404": {
-                        "description": "The resource doesn't exist"
                     }
                 },
                 "security": {
@@ -444,6 +442,11 @@
                     }
                 },
                 "type": "object"
+            }
+        },
+        "responses": {
+            "401": {
+                "description": "Invalid or missing token"
             }
         }
     }

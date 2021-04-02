@@ -29,12 +29,13 @@ class CustomerController extends AbstractController
     /**
      * Provides the list of customer resources for a specific user.
      *
-     * @Route(name="list", methods={"GET"})
+     * @Route("/list/{page<\d+>?1}", name="list", methods={"GET"})
      * @param Paginator $paginator
      * @param SerializerInterface $serializer
+     * @param integer $page
      *
      * @OA\Get(
-     *     path="/api/customers",
+     *     path="/api/customers/list",
      *     tags={"Customer"},
      *     security={"bearer"},
      *     @OA\Parameter(
@@ -68,11 +69,12 @@ class CustomerController extends AbstractController
      * )
      * @return Response
      */
-    public function list(Paginator $paginator, SerializerInterface $serializer): Response
+    public function list(Paginator $paginator, SerializerInterface $serializer, int $page): Response
     {
         $user= $this->getUser();
         $paginator  ->setEntityClass(Customer::class)
-                    ->setFilterBy(['user'=>$user]);
+                    ->setFilterBy(['user'=>$user])
+                    ->setPage($page);
         $data= $serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array('list')));
 
         return new Response($data, 200, ['Content-Type' => 'application/json']);
@@ -112,10 +114,6 @@ class CustomerController extends AbstractController
      *       response=401,
      *       description="Invalid or missing token"
      *    ),
-     *    @OA\Response(
-     *        response=404,
-     *        description="The resource doesn't exist"
-     *     )
      * )
      * @return Response
      */
@@ -127,10 +125,7 @@ class CustomerController extends AbstractController
             return new Response($data, 200, ['Content-Type' => 'application/json']);
         }
         else if($customer && $customer->getUser() != $user){
-            return new Response("You can't access to this resource", 403);
-        }
-        else {
-            return new Response("The resource doesn't exist", 404, ['Content-Type' => 'application/json']);
+           new Response("You can't access to this resource", 403,['Content-Type' => 'application/json']);
         }
     }
 
@@ -229,9 +224,6 @@ class CustomerController extends AbstractController
      *       response=401,
      *       description="Invalid or missing token"
      *    ),
-     *    @OA\Response(
-     *       response="404",
-     *       description="Resource not found"),
      * )
      * @return JsonResponse|Response
      */
@@ -245,9 +237,6 @@ class CustomerController extends AbstractController
         }
         else if($customer && $customer->getUser() != $this->getUser()){
             return new Response("You can't access to this resource", 403, ['Content-Type' => 'application/json']);
-        }
-        else{
-            return new Response("Resource not found", 404);
         }
     }
 
@@ -291,11 +280,9 @@ class CustomerController extends AbstractController
         $data= $request->getContent();
         try{
             $content= $serializer->deserialize($data, Customer::class, 'json');
-            $customer->getId($content->getId());
+            $errors= $validator->validate($content);
 
-            $errors= $validator->validate($customer);
-
-            if(count($errors)>0) {
+            if(count($errors)>0 && $customer->getEmail()!= $content->getEmail()){
                 return $this->json($errors, 400);
             }
             else {
@@ -305,7 +292,9 @@ class CustomerController extends AbstractController
                 $manager->persist($customer);
                 $manager->flush();
 
-                return $this->json($customer, 200, [], ['groups' => 'customers:item']);
+                $customer=$serializer->serialize($customer, "json",SerializationContext::create()->setGroups(array('item')));
+
+                return new Response($customer, 200, ['Content-Type' => 'application/json']);
             }
         } catch(NotEncodableValueException $e){
             return $this->json([
