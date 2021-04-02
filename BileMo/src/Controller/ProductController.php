@@ -22,12 +22,13 @@ class ProductController extends AbstractController
     /**
      * Provide the list of all the product resources.
      *
-     * @Route(name="list", methods={"GET"})
+     * @Route("/list/{page<\d+>?1}", name="list", methods={"GET"})
      * @param Paginator $paginator
      * @param SerializerInterface $serializer
+     * @param integer $page
      *
      * @OA\Get(
-     *     path="/api/products",
+     *     path="/api/products/list",
      *     tags={"Product"},
      *     security={"bearer"},
      *     @OA\Parameter(
@@ -43,7 +44,8 @@ class ProductController extends AbstractController
      *     @OA\Response(
      *          response="200",
      *          description="Product list",
-     *          @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
+     *          @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product")),
+     *          @OA\Link(link="Read the details of a product", operationId="item", ))
      *     ),
      *    @OA\Response(
      *       response=401,
@@ -52,9 +54,10 @@ class ProductController extends AbstractController
      * )
      * @return Response
      */
-    public function list(Paginator $paginator, SerializerInterface $serializer): Response
+    public function list(Paginator $paginator, SerializerInterface $serializer, int $page): Response
     {
-        $paginator->setEntityClass(Product::class);
+        $paginator->setEntityClass(Product::class)
+                ->setPage($page);
         $data=$serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array('list')));
         return new Response($data, 200, ['Content-Type' => 'application/json']);
     }
@@ -81,7 +84,8 @@ class ProductController extends AbstractController
      *    @OA\Response(
      *       response="200",
      *       description="Product resource",
-     *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
+     *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product")),
+     *       @OA\Link(link="List of all the product", operationId="list")
      *     ),
      *    @OA\Response(
      *       response=401,
@@ -91,10 +95,6 @@ class ProductController extends AbstractController
      *       response=400,
      *       description="Invalid ID supplied"
      *    ),
-     *    @OA\Response(
-     *       response=404,
-     *       description="The resource doesn't exist",
-     *     ),
      *     security={
      *       "bearerAuth": {"JWT"}
      *     }
@@ -103,13 +103,8 @@ class ProductController extends AbstractController
      */
     public function details(Product $product,SerializerInterface $serializer): Response
     {
-        if($product){
             $data=$serializer->serialize($product,"json", SerializationContext::create()->setGroups(array('item')));
             return new Response($data, 200, ['Content-Type' => 'application/json']);
-        }
-        else{
-            return new Response("The resource doesn't exist", 404, ['Content-Type' => 'application/json']);
-        }
     }
 
 }

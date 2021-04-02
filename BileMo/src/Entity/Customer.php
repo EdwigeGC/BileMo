@@ -71,6 +71,7 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Serializer\Since("1.0")
      * @Serializer\Groups({"list", "item"})
      */
     private $id;
@@ -80,6 +81,8 @@ class Customer
      * @var string
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email()
+     * @Assert\NotBlank
+     * @Serializer\Since("1.0")
      * @Serializer\Groups({"item"})
      */
     private $email;
@@ -88,7 +91,9 @@ class Customer
      * @OA\Property (type="string")
      * @var string
      * @ORM\Column(type="string")
+     * @Assert\NotBlank
      * @Assert\Length(min=2, max=100)
+     * @Serializer\Since("1.0")
      * @Serializer\Groups({"list", "item"})
      */
     private $lastName;
@@ -98,6 +103,8 @@ class Customer
      * @var string
      * @ORM\Column(type="string")
      * @Assert\Length(min=2, max=100)
+     * @Assert\NotBlank
+     * @Serializer\Since("1.0")
      * @Serializer\Groups({"list", "item"})
      */
     private $firstName;
@@ -107,6 +114,7 @@ class Customer
      * @var DateTimeInterface
      * @ORM\Column(type="datetime")
      * @Assert\DateTime
+     * @Serializer\Since("1.0")
      * @Serializer\Groups({"item"})
      */
     private $createdAt;
