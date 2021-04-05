@@ -3,6 +3,9 @@
 namespace App\Service;
 
 use Doctrine\Persistence\ObjectManager;
+use Hateoas\Representation\CollectionRepresentation;
+use Hateoas\Representation\PaginatedRepresentation;
+
 
 /**
  * Service to paginate object in templates
@@ -12,19 +15,21 @@ use Doctrine\Persistence\ObjectManager;
 class Paginator
 {
     /**
-     * @var $entityClass to find name entity class concerned
+     * @var string $entityClass find name entity class concerned
      */
     private $entityClass;
+
+    private $path;
 
     /**
      * @var int $limit maximum number of objects displayed
      */
-    private $limit = 2;
+    private $limit = 10;
 
     /**
-     * @var int $page page number
+     * @var int $currentPage page number
      */
-    private $page = 1;
+    private $currentPage;
 
     /**
      * @var ObjectManager $manager
@@ -49,29 +54,8 @@ class Paginator
     /**
      * Provides the number of pages according to the number of objects to display
      *
-     * @return float $pages
+     * @return float $totalPages
      */
-    public function getPages()
-    {
-        $total = count($this->manager->getRepository($this->entityClass)->findBy($this->filterBy, $this->orderBy));
-        $pages = ceil($total / $this->limit);
-
-        return $pages;
-    }
-
-    /**
-     * Provides the result of the request
-     *
-     * @return object[] $data
-     */
-    public function getData()
-    {
-        $offset = $this->page * $this->limit - $this->limit;
-        $repository = $this->manager->getRepository($this->entityClass);
-        $data = $repository->findBy($this->filterBy, $this->orderBy, $this->limit, $offset);
-
-        return $data;
-    }
 
     /**
      * Setter for EntityClass attribute
@@ -90,6 +74,16 @@ class Paginator
     public function getEntityClass()
     {
         return $this->entityClass;
+    }
+
+    public function getPath()
+    {
+        return $this->path;
+    }
+
+    public function setPath($path): void
+    {
+        $this->path = $path;
     }
 
     /**
@@ -113,11 +107,11 @@ class Paginator
 
     /**
      * Setter for page attribute
-     * @param $page
+     * @param $currentPage
      */
-    public function setPage($page)
+    public function setCurrentPage($currentPage)
     {
-        $this->page = $page;
+        $this->currentPage = $currentPage;
 
         return $this;
     }
@@ -125,9 +119,9 @@ class Paginator
     /**
      * Getter for page attribute
      */
-    public function getPage()
+    public function getCurrentPage()
     {
-        return $this->page;
+        return $this->currentPage;
     }
 
     /**
@@ -149,6 +143,34 @@ class Paginator
     {
         $this->filterBy = $filterBy;
         return $this;
+    }
+
+    /**
+     * Provides the result of the request
+     * @return PaginatedRepresentation
+     */
+    public function getData(): PaginatedRepresentation
+    {
+        $offset = $this->currentPage * $this->limit - $this->limit;
+        $repository = $this->manager->getRepository($this->entityClass);
+        $total = count($repository->findBy($this->filterBy, $this->orderBy));
+        $totalPages = ceil($total / $this->limit);
+        $data = $repository->findBy($this->filterBy, $this->orderBy, $this->limit, $offset);
+
+        $pagination = new PaginatedRepresentation(
+            new CollectionRepresentation($data),
+            $this->path,
+            array(),
+            $this->currentPage,
+            $this->limit,
+            $totalPages,
+            'current page',
+            'limit',
+            true,
+            $total
+        );
+
+        return $pagination;
     }
 
 }

@@ -27,15 +27,15 @@ use OpenApi\Annotations as OA;
 class CustomerController extends AbstractController
 {
     /**
-     * Provides the list of customer resources for a specific user.
+     * Provides the collection of customer resources for a specific user.
      *
-     * @Route("/list/{page<\d+>?1}", name="list", methods={"GET"})
+     * @Route(name="list", methods={"GET"})
      * @param Paginator $paginator
      * @param SerializerInterface $serializer
-     * @param integer $page
+     * @param Request $request
      *
      * @OA\Get(
-     *     path="/api/customers/list",
+     *     path="/api/customers",
      *     tags={"Customer"},
      *     security={"bearer"},
      *     @OA\Parameter(
@@ -69,15 +69,29 @@ class CustomerController extends AbstractController
      * )
      * @return Response
      */
-    public function list(Paginator $paginator, SerializerInterface $serializer, int $page): Response
+    public function list(Paginator $paginator, SerializerInterface $serializer, Request $request): Response
     {
         $user= $this->getUser();
+        $path = $request->attributes->get('_route');
+        $page = $request->query->get('page', 1);
+
         $paginator  ->setEntityClass(Customer::class)
                     ->setFilterBy(['user'=>$user])
-                    ->setPage($page);
-        $data= $serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array('list')));
+                    ->setCurrentPage($page)
+                    ->setPath($path);
 
-        return new Response($data, 200, ['Content-Type' => 'application/json']);
+        $data= $serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array(
+            'Default',
+            'items' => array(
+                'list'
+            )
+        )));
+        $response=new Response($data, 200, ['Content-Type' => 'application/json']);
+        $response->setSharedMaxAge(3600)
+                ->setPrivate();
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+
+        return $response;
     }
 
     /**
@@ -124,8 +138,9 @@ class CustomerController extends AbstractController
             $data=$serializer->serialize($customer, "json",SerializationContext::create()->setGroups(array('item')));
             return new Response($data, 200, ['Content-Type' => 'application/json']);
         }
+
         else if($customer && $customer->getUser() != $user){
-           new Response("You can't access to this resource", 403,['Content-Type' => 'application/json']);
+           return new Response("You can't access to this resource", 403,['Content-Type' => 'application/json']);
         }
     }
 
@@ -157,7 +172,11 @@ class CustomerController extends AbstractController
      *    ),
      *     @OA\RequestBody(
      *        required=true,
-     *        @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
+     *        @OA\JsonContent(
+     *              @OA\Property(property="email", type="string", format="email"),
+     *              @OA\Property (property="lastName", type="string"),
+     *              @OA\Property (property="firstName", type="string")
+     *        )
      *     )
      * )
      * @return Response
@@ -269,11 +288,15 @@ class CustomerController extends AbstractController
      *    ),
      *     @OA\RequestBody(
      *        required=true,
-     *        @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Customer"))
+     *        @OA\JsonContent(
+     *              @OA\Property(property="email", type="string", format="email"),
+     *              @OA\Property (property="lastName", type="string"),
+     *              @OA\Property (property="firstName", type="string")
+     *        )
      *     )
      * )
      *
-     * @return JsonResponse
+     * @return Response
      */
     public function edit(Customer $customer, Request $request, EntityManagerInterface $manager, SerializerInterface $serializer, ValidatorInterface $validator)
     {

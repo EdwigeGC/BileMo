@@ -7,9 +7,11 @@ use App\Service\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Request;
 use JMS\Serializer\SerializerInterface;
 use JMS\Serializer\SerializationContext;
 use OpenApi\Annotations as OA;
+use JMS\Serializer\Annotation\Groups;
 
 
 /**
@@ -20,15 +22,15 @@ use OpenApi\Annotations as OA;
 class ProductController extends AbstractController
 {
     /**
-     * Provide the list of all the product resources.
+     * Provide the collection of all the product resources.
      *
-     * @Route("/list/{page<\d+>?1}", name="list", methods={"GET"})
+     * @Route(name="list", methods={"GET"})
      * @param Paginator $paginator
      * @param SerializerInterface $serializer
-     * @param integer $page
+     * @param Request $request
      *
      * @OA\Get(
-     *     path="/api/products/list",
+     *     path="/api/products",
      *     tags={"Product"},
      *     security={"bearer"},
      *     @OA\Parameter(
@@ -54,12 +56,26 @@ class ProductController extends AbstractController
      * )
      * @return Response
      */
-    public function list(Paginator $paginator, SerializerInterface $serializer, int $page): Response
+    public function list(Paginator $paginator, SerializerInterface $serializer, Request $request): Response
     {
+        $path = $request->attributes->get('_route');
+        $page = $request->query->get('page', 1);
+
         $paginator->setEntityClass(Product::class)
-                ->setPage($page);
-        $data=$serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array('list')));
-        return new Response($data, 200, ['Content-Type' => 'application/json']);
+                ->setCurrentPage($page)
+                ->setPath($path);
+
+        $data=$serializer->serialize($paginator->getData(),"json",SerializationContext::create()->setGroups(array(
+            'Default',
+            'items' => array(
+                'list'
+            )
+        )));
+        $response= new Response($data, 200, ['Content-Type' => 'application/json']);
+        $response->setSharedMaxAge(3600);
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+
+        return $response;
     }
 
     /**
@@ -104,7 +120,7 @@ class ProductController extends AbstractController
     public function details(Product $product,SerializerInterface $serializer): Response
     {
             $data=$serializer->serialize($product,"json", SerializationContext::create()->setGroups(array('item')));
-            return new Response($data, 200, ['Content-Type' => 'application/json']);
+            return new Response ($data, 200, ['Content-Type' => 'application/json']);
     }
 
 }

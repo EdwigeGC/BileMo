@@ -9,8 +9,16 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+/**
+ * Class AppFixtures
+ * @package App\DataFixtures
+ */
 class AppFixtures extends Fixture
 {
+    /**
+     * AppFixtures constructor.
+     * @param UserPasswordEncoderInterface $encoder
+     */
     public function __construct(UserPasswordEncoderInterface $encoder)
     {
         $this->encoder = $encoder;
@@ -19,11 +27,12 @@ class AppFixtures extends Fixture
     public function load(ObjectManager $manager)
     {
         //Users
+
         $user1 = new User();
-        $hash = $this->encoder->encodePassword($user1, 'pass1');
-        $user1->setName('Web Shop')
-            ->setCreatedAt(new \DateTime('2021-01-15 12:14:34'))
-            ->setEmail('webshop@mail.fr')
+        $hash = $this->encoder->encodePassword($user1, 'pass');
+        $user1->setName('userTest')
+            ->setCreatedAt(new \DateTime('2021-04-01 12:14:34'))
+            ->setEmail('userTest@mail.com')
             ->setPassword($hash);
         $manager->persist($user1);
 
@@ -35,7 +44,17 @@ class AppFixtures extends Fixture
             ->setPassword($hash);
         $manager->persist($user2);
 
+        $user3 = new User();
+        $hash = $this->encoder->encodePassword($user3, 'pass3');
+        $user3->setName('Web Shop')
+            ->setCreatedAt(new \DateTime('2021-01-15 12:14:34'))
+            ->setEmail('webshop@mail.fr')
+            ->setPassword($hash);
+        $manager->persist($user3);
+
+
         // Products
+
         $product1= new Product();
         $product1 ->setName('I Phone 12 pro max')
             ->setPrice(969.99)
@@ -69,7 +88,21 @@ class AppFixtures extends Fixture
             ->setScreenSize('6.1');
         $manager->persist($product3);
 
+        for($j=1; $j<=25; $j++) {
+            $product= new Product();
+            $product ->setName('Phone' .$j)
+                ->setPrice(969.99)
+                ->setReference('REFPHONE' .$j)
+                ->setColor('Blue')
+                ->setBrand('Apple')
+                ->setStorageCapacity('128')
+                ->setOperatingSystem('ios')
+                ->setScreenSize('6.7');
+            $manager->persist($product);
+        }
+
         //Customers
+
         $customer1= new Customer();
         $customer1  ->setEmail('s.mart@mail.com')
             ->setFirstName('simone')
@@ -93,6 +126,38 @@ class AppFixtures extends Fixture
             ->setCreatedAt(new \DateTime('2021-03-03 12:14:34'))
             ->setUser($user1);
         $manager->persist($customer3);
+
+        for($i=1; $i<=10; $i++)
+        {
+            $customer4 = new Customer();
+            $customer4 ->setEmail("user.$i @email.com")
+                ->setLastName("User" .$i)
+                ->setFirstName("first name" .$i)
+                ->setCreatedAt(new \DateTime('2021-03-05 15:27:34'))
+                ->setUser($user1);
+            $manager->persist($customer4);
+        }
+
+        for($k=11; $k<=20; $k++)
+        {
+            $customer5 = new Customer();
+            $customer5 ->setEmail("user.$k @email.com")
+                ->setLastName("User" .$k)
+                ->setFirstName("first name" .$k)
+                ->setCreatedAt(new \DateTime('2021-04-03 17:12:34'))
+                ->setUser($user2);
+            $manager->persist($customer5);
+        }
+
+        for($l=21; $l<=30; $l++) {
+            $customer6 = new Customer();
+            $customer6->setEmail("user.$l @email.com")
+                ->setLastName("User" . $l)
+                ->setFirstName("first name" . $l)
+                ->setCreatedAt(new \DateTime('2021-04-03 17:12:34'))
+                ->setUser($user3);
+            $manager->persist($customer6);
+        }
 
         $manager->flush();
     }
