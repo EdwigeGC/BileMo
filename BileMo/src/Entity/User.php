@@ -10,7 +10,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use OpenApi\Annotations as OA;
 use Hateoas\Configuration\Annotation as Hateoas;
-use Hateoas\Configuration\Annotation\Exclusion;
 
 
 /**
@@ -55,7 +54,7 @@ class User implements UserInterface
     private $email;
 
     /**
-     * @ORM\Column(type="json")
+     * @var string user's role
      */
     private $roles = [];
 

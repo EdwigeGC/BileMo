@@ -6,12 +6,12 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/customers/list": {
+        "/api/customers": {
             "get": {
                 "tags": [
                     "Customer"
                 ],
-                "summary": "Provides the list of customer resources for a specific user.",
+                "summary": "Provides the collection of customer resources for a specific user.",
                 "parameters": [
                     {
                         "name": "user_id",
@@ -119,10 +119,22 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/Customer"
-                                }
+                                "properties": {
+                                    "email": {
+                                        "description": "Create a new customer",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "lastName": {
+                                        "description": "Create a new customer",
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "description": "Create a new customer",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
@@ -204,10 +216,22 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/Customer"
-                                }
+                                "properties": {
+                                    "email": {
+                                        "description": "Edit customer's information",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "lastName": {
+                                        "description": "Edit customer's information",
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "description": "Edit customer's information",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
@@ -240,12 +264,12 @@
                 ]
             }
         },
-        "/api/products/list": {
+        "/api/products": {
             "get": {
                 "tags": [
                     "Product"
                 ],
-                "summary": "Provide the list of all the product resources.",
+                "summary": "Provide the collection of all the product resources.",
                 "parameters": [
                     {
                         "name": "page",

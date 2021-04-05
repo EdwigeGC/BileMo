@@ -7,3 +7,8 @@ jms_serializer:
                 - JSON_PRESERVE_ZERO_FRACTION
     property_naming:
         id: 'jms_serializer.identical_property_naming_strategy'
+
+    handlers:
+        datetime:
+            default_format: "Y-m-d\\TH:i:sP"
+            default_timezone: "UTC"
