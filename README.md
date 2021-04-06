@@ -27,15 +27,15 @@ Dependency used for the project:
 
 ### Installation
 
- 1. Copy the link on GitHub and clone it on your local repository
+ 1. Copy the link on GitHub and clone it on your local repository   
    ```git clone https://github.com/EdwigeGC/BileMo.git```
- 2. Open your terminal and run:
+ 2. Open your terminal and run:   
    ``` composer install```
- 3. Create database: 
+ 3. Create database:   
   ```php bin/console doctrine:database:create```
- 4. Open file .env and write username and password for DATABASE_URL:
+ 4. Open file .env and write username and password for DATABASE_URL:   
 ```DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/db_name?serverVersion=5.7"```
- 5. Fill the database with fixtures:
+ 5. Fill the database with fixtures:   
 ```php bin/console make:migration```
 ```php bin/console doctrine:migration:migrate```
 ```php bin/console doctrine:fixtures:load```
