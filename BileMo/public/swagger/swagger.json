@@ -2,27 +2,17 @@
     "openapi": "3.0.0",
     "info": {
         "title": "BileMo",
-        "description": "This API provides to BileMo referenced user to access its products and manage their customers",
+        "description": "This API provides to BileMo's referenced user to access its products and manage their customers",
         "version": "1.0.0"
     },
     "paths": {
-        "/api/customers": {
+        "/api/v1/customers": {
             "get": {
                 "tags": [
                     "Customer"
                 ],
                 "summary": "Provides the collection of customer resources for a specific user.",
                 "parameters": [
-                    {
-                        "name": "user_id",
-                        "in": "path",
-                        "description": "Your user's ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "format": "int32"
-                        }
-                    },
                     {
                         "name": "page",
                         "in": "query",
@@ -47,6 +37,12 @@
                                     }
                                 }
                             }
+                        },
+                        "links": {
+                            "Read the details of a customer": {
+                                "operationId": "getCustomer",
+                                "parameters": "id"
+                            }
                         }
                     },
                     "401": {
@@ -60,13 +56,13 @@
                 ]
             }
         },
-        "/api/customers/{id}": {
+        "/api/v1/customers/{id}": {
             "get": {
                 "tags": [
                     "Customer"
                 ],
                 "summary": "Provides one customer resource for a specific user.",
-                "operationId": "App\\Controller\\CustomerController::item",
+                "operationId": "getCustomer",
                 "parameters": [
                     {
                         "name": "id",
@@ -105,9 +101,65 @@
                         "scalar": "bearer"
                     }
                 ]
-            }
-        },
-        "/api/customers/new": {
+            },
+            "put": {
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Edit customer's information",
+                "operationId": "App\\Controller\\CustomerController::edit",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "description": "Edit customer's information",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "lastName": {
+                                        "description": "Edit customer's information",
+                                        "type": "string"
+                                    },
+                                    "firstName": {
+                                        "description": "Edit customer's information",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Customer resource updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Customer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data recorded"
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
+                    }
+                },
+                "security": [
+                    {
+                        "scalar": "bearer"
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Customer"
@@ -167,7 +219,7 @@
                 ]
             }
         },
-        "api/customers/{id}/delete": {
+        "api/v1/customers/{id}": {
             "delete": {
                 "tags": [
                     "Customer"
@@ -204,67 +256,7 @@
                 ]
             }
         },
-        "/api/customers/{id}/edit": {
-            "put": {
-                "tags": [
-                    "Customer"
-                ],
-                "summary": "Edit customer's information",
-                "operationId": "App\\Controller\\CustomerController::edit",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "email": {
-                                        "description": "Edit customer's information",
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "lastName": {
-                                        "description": "Edit customer's information",
-                                        "type": "string"
-                                    },
-                                    "firstName": {
-                                        "description": "Edit customer's information",
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Customer resource updated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Customer"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid data recorded"
-                    },
-                    "401": {
-                        "description": "Invalid or missing token"
-                    }
-                },
-                "security": [
-                    {
-                        "scalar": "bearer"
-                    }
-                ]
-            }
-        },
-        "/api/products": {
+        "/api/v1/products": {
             "get": {
                 "tags": [
                     "Product"
@@ -298,9 +290,13 @@
                         },
                         "links": {
                             "Read the details of a product": {
-                                "operationId": "item"
+                                "operationId": "getProduct",
+                                "parameters": "id"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Invalid or missing token"
                     }
                 },
                 "security": [
@@ -310,13 +306,13 @@
                 ]
             }
         },
-        "/api/products/{id}": {
+        "/api/v1/products/{id}": {
             "get": {
                 "tags": [
                     "Product"
                 ],
                 "summary": "Provides one product resource.",
-                "operationId": "App\\Controller\\ProductController::details",
+                "operationId": "getProduct",
                 "parameters": [
                     {
                         "name": "id",
@@ -341,11 +337,6 @@
                                     }
                                 }
                             }
-                        },
-                        "links": {
-                            "List of all the product": {
-                                "operationId": "list"
-                            }
                         }
                     },
                     "401": {
@@ -355,11 +346,11 @@
                         "description": "Invalid ID supplied"
                     }
                 },
-                "security": {
-                    "bearerAuth": {
-                        "0": "JWT"
+                "security": [
+                    {
+                        "scalar": "bearer"
                     }
-                }
+                ]
             }
         },
         "/api/login_check": {
@@ -369,6 +360,28 @@
                 ],
                 "summary": "Provides new token thanks to basic authentication",
                 "operationId": "App\\Controller\\SecurityController::api_login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "username": {
+                                        "description": "Provides new token thanks to basic authentication",
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "description": "Provides new token thanks to basic authentication",
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "new valid token",
@@ -466,11 +479,6 @@
                     }
                 },
                 "type": "object"
-            }
-        },
-        "responses": {
-            "401": {
-                "description": "Invalid or missing token"
             }
         }
     }

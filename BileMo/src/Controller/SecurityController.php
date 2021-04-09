@@ -27,6 +27,13 @@ class SecurityController extends AbstractController
      *       response=400,
      *       description="Failure: bad username or password"
      *    ),
+     *     @OA\RequestBody(
+     *        required=true,
+     *        @OA\JsonContent(
+     *              @OA\Property(property="username", type="string", format="email"),
+     *              @OA\Property(property="password", type="string", format="password"),
+     *        )
+     *     )
      * )
      * @return JsonResponse
      */

@@ -154,6 +154,14 @@
                 },
                 "type": "object"
             }
+        },
+        "securitySchemes":{
+            "bearerAuth":{
+                "type": "http",
+                "description": "Enter a valid JWT Bearer token",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
         }
     }
 }
