@@ -11,12 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 use JMS\Serializer\SerializerInterface;
 use JMS\Serializer\SerializationContext;
 use OpenApi\Annotations as OA;
-use JMS\Serializer\Annotation\Groups;
 
 
 /**
  * Class ProductController provides features to manage products
- * @Route("/api/products", name="api_products_")
+ * @Route("/api/v1/products", name="api_products_")
  * @package App\Controller
  */
 class ProductController extends AbstractController
@@ -30,7 +29,7 @@ class ProductController extends AbstractController
      * @param Request $request
      *
      * @OA\Get(
-     *     path="/api/products",
+     *     path="/api/v1/products",
      *     tags={"Product"},
      *     security={"bearer"},
      *     @OA\Parameter(
@@ -47,7 +46,7 @@ class ProductController extends AbstractController
      *          response="200",
      *          description="Product list",
      *          @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product")),
-     *          @OA\Link(link="Read the details of a product", operationId="item", ))
+     *          @OA\Link(link="Read the details of a product", operationId="getProduct", parameters="id")
      *     ),
      *    @OA\Response(
      *       response=401,
@@ -59,7 +58,7 @@ class ProductController extends AbstractController
     public function list(Paginator $paginator, SerializerInterface $serializer, Request $request): Response
     {
         $path = $request->attributes->get('_route');
-        $page = $request->query->get('page', 1);
+        $page = $request->query->get('current_page', 1);
 
         $paginator->setEntityClass(Product::class)
                 ->setCurrentPage($page)
@@ -86,7 +85,8 @@ class ProductController extends AbstractController
      * @param SerializerInterface $serializer
      *
      * @OA\Get(
-     *    path="/api/products/{id}",
+     *    path="/api/v1/products/{id}",
+     *    operationId="getProduct",
      *    tags={"Product"},
      *    security={"bearer"},
      *    @OA\Parameter(
@@ -100,8 +100,7 @@ class ProductController extends AbstractController
      *    @OA\Response(
      *       response="200",
      *       description="Product resource",
-     *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product")),
-     *       @OA\Link(link="List of all the product", operationId="list")
+     *       @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
      *     ),
      *    @OA\Response(
      *       response=401,
@@ -111,9 +110,6 @@ class ProductController extends AbstractController
      *       response=400,
      *       description="Invalid ID supplied"
      *    ),
-     *     security={
-     *       "bearerAuth": {"JWT"}
-     *     }
      * )
      * @return Response
      */

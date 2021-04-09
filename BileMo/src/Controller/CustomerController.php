@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Repository\CustomerRepository;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -21,7 +20,7 @@ use OpenApi\Annotations as OA;
 /**
  * Class CustomerController provides features to manage customers
  *
- * @Route("/api/customers", name="api_customers_")
+ * @Route("/api/v1/customers", name="api_customers_")
  * @package App\Controller
  */
 class CustomerController extends AbstractController
@@ -35,18 +34,9 @@ class CustomerController extends AbstractController
      * @param Request $request
      *
      * @OA\Get(
-     *     path="/api/customers",
+     *     path="/api/v1/customers",
      *     tags={"Customer"},
      *     security={"bearer"},
-     *     @OA\Parameter(
-     *          name="user_id",
-     *          in="path",
-     *          description="Your user's ID",
-     *          required=true,
-     *          @OA\Schema(
-     *             type="integer",
-     *             format="int32")
-     *      ),
      *     @OA\Parameter(
      *          name="page",
      *          in="query",
@@ -60,7 +50,8 @@ class CustomerController extends AbstractController
      *     @OA\Response(
      *          response="200",
      *          description="Customer list",
-     *          @OA\JsonContent(type="array",@OA\Items(ref="#/components/schemas/Customer"))
+     *          @OA\JsonContent(type="array",@OA\Items(ref="#/components/schemas/Customer")),
+     *          @OA\Link(link="Read the details of a customer", operationId="getCustomer", parameters="id")
      *     ),
      *    @OA\Response(
      *       response=401,
@@ -73,7 +64,7 @@ class CustomerController extends AbstractController
     {
         $user= $this->getUser();
         $path = $request->attributes->get('_route');
-        $page = $request->query->get('page', 1);
+        $page = $request->query->get('current_page', 1);
 
         $paginator  ->setEntityClass(Customer::class)
                     ->setFilterBy(['user'=>$user])
@@ -99,12 +90,12 @@ class CustomerController extends AbstractController
      *
      * @Route("/{id}", name="item", methods={"GET"})
      * @param Customer $customer
-     * @param CustomerRepository $repository
      * @param SerializerInterface $serializer
      *
      * @OA\Get(
-     *    path="/api/customers/{id}",
+     *    path="/api/v1/customers/{id}",
      *    tags={"Customer"},
+     *    operationId="getCustomer",
      *    security={"bearer"},
      *    @OA\Parameter(
      *          name="id",
@@ -131,7 +122,7 @@ class CustomerController extends AbstractController
      * )
      * @return Response
      */
-    public function item(Customer $customer, CustomerRepository $repository, SerializerInterface $serializer): Response
+    public function item(Customer $customer, SerializerInterface $serializer): Response
     {
         $user= $this->getUser();
         if($customer && $customer->getUser() == $user){
@@ -147,14 +138,14 @@ class CustomerController extends AbstractController
     /**
      * Create a new customer
      *
-     * @Route("/new", name="create", methods={"POST"})
+     * @Route(name="create", methods={"POST"})
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $manager
      * @param ValidatorInterface $validator
      *
      * @OA\Post(
-     *    path="/api/customers/new",
+     *    path="/api/v1/customers/{id}",
      *    tags={"Customer"},
      *    security={"bearer"},
      *    @OA\Response(
@@ -215,12 +206,12 @@ class CustomerController extends AbstractController
     /**
      * Delete a customer
      *
-     * @Route ("/{id}/delete", name="delete", methods={"DELETE"})
+     * @Route ("/{id}", name="delete", methods={"DELETE"})
      * @param Customer $customer
      * @param EntityManagerInterface $manager
      *
      * @OA\Delete(
-     *     path="api/customers/{id}/delete",
+     *     path="api/v1/customers/{id}",
      *     tags={"Customer"},
      *     security={"bearer"},
      *    @OA\Parameter(
@@ -261,7 +252,7 @@ class CustomerController extends AbstractController
 
     /**
      * Edit customer's information
-     * @Route("/{id}/edit", name="edit", methods={"PUT"})
+     * @Route("/{id}", name="edit", methods={"PUT"})
      *
      * @param Customer $customer
      * @param Request $request
@@ -270,7 +261,7 @@ class CustomerController extends AbstractController
      * @param ValidatorInterface $validator
      *
      * @OA\Put(
-     *    path="/api/customers/{id}/edit",
+     *    path="/api/v1/customers/{id}",
      *    tags={"Customer"},
      *    security={"bearer"},
      *    @OA\Response(
@@ -282,7 +273,7 @@ class CustomerController extends AbstractController
      *       response=400,
      *       description="Invalid data recorded"
      *    ),
-     *    @OA\Response(
+     *     @OA\Response(
      *       response=401,
      *       description="Invalid or missing token"
      *    ),
